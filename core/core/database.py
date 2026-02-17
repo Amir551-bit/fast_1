@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine, Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.orm import sessionmaker, declarative_base
-from config import settings
+from core.core.config import settings
 
 
 
@@ -18,6 +18,8 @@ Sessionmaker = sessionmaker(autoflush=False, bind=engine, autocommit=False)
 
 Base = declarative_base() 
 
+
+Base.metadata.create_all(bind=engine)
 
 
 def get_db():
