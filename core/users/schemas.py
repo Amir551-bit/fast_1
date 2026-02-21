@@ -20,6 +20,6 @@ class UserRegisterSchema(BaseModel):
 
     @field_validator("password_confirm")
     def check_passwords_match(cls, password_confirm, validation):
-        if not (password_confirm == validation.data.get("password")):
+        if not (password_confirm == validation.data.get("password")):  # = یه شیء که بهت اجازه می‌ده به بقیه فیلدهای فرم دسترسی داشته باشی.
             raise ValueError("passwords doesnt match")
         return password_confirm

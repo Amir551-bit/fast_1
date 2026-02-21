@@ -35,8 +35,9 @@ DATABASE_URL = os.getenv("SQLALCHEMY_DATABASE_URL")
 from core.tasks.models import *
 from core.users.models import *
 target_metadata = Base.metadata
-
-
+     # ببین همه جدول ها برای ساخت یه فرم اولیه دارن که خوب باید ازش پیروی کنن این همون base هست 
+     # متادیتا یه شی از این بیس هستش خوب که بدون انگار دفترچه یادداشت هست خوب و همه اطلاعات دیتابیس یعنی ساختن و همه جدول ها و همه ستون هاشون در ذخیره میشه 
+     # تارگت متادیتا یعنی المبیک چی بسازه جالا براش با این همین 
 
 config = context.config
 
@@ -73,6 +74,7 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        render_as_batch=True
     )
 
     with context.begin_transaction():
@@ -94,7 +96,8 @@ def run_migrations_online() -> None:
 
     with connectable.connect() as connection:
         context.configure(
-            connection=connection, target_metadata=target_metadata
+            connection=connection, target_metadata=target_metadata,
+            render_as_batch=True
         )
 
         with context.begin_transaction():

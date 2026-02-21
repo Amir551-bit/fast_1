@@ -1,9 +1,11 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from contextlib import asynccontextmanager
 from core.tasks.routes import router as tasks_routes 
 from core.core.database import Base, engine
 from core.tasks.models import TaskModel
 from core.users.routes import router as users_routes
+from core.users.models import UserModel
+
 
 
 
@@ -55,7 +57,25 @@ app.include_router(users_routes)
 
 
 
-@app.get("/salam")
-def get_Hello():
+# from auth.basic_auth import get_current_username
+from fastapi.security import APIKeyHeader       # APIKeyquery
 
-    return {"Message" : "Hello world"}
+header_schema = APIKeyHeader(name="x-key")
+
+
+@app.get("/public")
+def public_route():
+    return {"Message" : "this is a public route"}
+
+
+
+@app.get("/private")
+def private_route(api_key = Depends(header_schema)):
+    return {"Message" : "this is a private route"}
+
+
+
+# @app.get("/private")
+# def private_route(user:UserModel = Depends(get_current_username)):
+#     print(user)
+#     return {"Message" : "this is a private route"}

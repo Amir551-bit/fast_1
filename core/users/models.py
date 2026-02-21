@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Text, Boolean, func, Integer, DateTime
+from sqlalchemy import Column, String, Text, Boolean, func, Integer, DateTime, ForeignKey
 from core.core.database import Base
 from datetime import datetime
 from sqlalchemy.orm import relationship
@@ -38,7 +38,9 @@ class UserModel(Base):
                                                                   # این که هش کرده با این که ما وارد کردیم مثل هم هستن درستع یا نه همین 
 
 
-
+    
+    def set_password(self, plain_text)->None:
+        self.password = self.hash_password(plain_text)
 
 
 
