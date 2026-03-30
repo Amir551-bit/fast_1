@@ -1,15 +1,22 @@
 from fastapi import APIRouter, Path, Depends, HTTPException, Query, status
 from fastapi.responses import JSONResponse
 from core.users.schemas import *
-from core.users.models import UserModel
+from core.users.models import UserModel, TokenModel
 from sqlalchemy.orm import Session
 from core.core.database import get_db
 from typing import List
+import secrets
+from auth.jwt_auth import generate_acces_token, generate_refresh_token
 
 
 router = APIRouter(tags=["users"], prefix="/users")
 
- 
+
+
+def generate_token(length=32):
+    """Generate a secure rendom token as a string"""
+    return secrets.token_hex(length)
+
 
 
 @router.post("/login")
@@ -19,7 +26,19 @@ async def user_login(request:UserLoginSchema, db : Session = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="user doesnt exists")
     if not user_obj.hash_password(request.password): #رمز عبور فرستاده شده الان رو با هش ذخیره شده در دیتابیس مقایسه میکنه همین 
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="password is invalid")
-    return {}
+    
+
+    access_token = generate_acces_token(user_obj.id)
+    refresh_token = generate_refresh_token(user_obj.id)
+
+
+
+    # token_obj = TokenModel(user_id = user_obj.id, token = generate_token())
+    # db.add(token_obj)
+    # db.commit()
+    # db.refresh(token_obj)
+
+    return JSONResponse(content={"details":"logged is succesfully", "access_token":access_token, "refresh_token" : refresh_token})
 
 
 

@@ -3,6 +3,7 @@ from core.core.database import Base
 from datetime import datetime
 from sqlalchemy.orm import relationship
 from passlib.context import CryptContext
+import secrets
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -25,6 +26,7 @@ class UserModel(Base):
     
 
     task = relationship("TaskModel", back_populates="user")
+    
 
 
     def hash_password(self, plain_password : str)->str:
@@ -43,6 +45,11 @@ class UserModel(Base):
         self.password = self.hash_password(plain_text)
 
 
+   
+
+    def create_api_key():
+        return secrets.token_hex(32)  # یه کلید تصادفی قوی
+
 
 
 
@@ -54,3 +61,16 @@ class UserModel(Base):
 
 # db.add(user)
 # db.commit()
+
+
+class TokenModel(Base):
+    __tablename__="tokens"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), name="fk_users_token")
+    token = Column(String, nullable=True, unique=True)
+
+    created_date = Column(DateTime, server_default=func.now())
+
+    user = relationship("UserModel", uselist=False)
+    

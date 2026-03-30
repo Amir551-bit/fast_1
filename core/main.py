@@ -5,6 +5,7 @@ from core.core.database import Base, engine
 from core.tasks.models import TaskModel
 from core.users.routes import router as users_routes
 from core.users.models import UserModel
+from auth.token_auth import get_current_user
 
 
 
@@ -58,9 +59,11 @@ app.include_router(users_routes)
 
 
 # from auth.basic_auth import get_current_username
-from fastapi.security import APIKeyHeader       # APIKeyquery
+# from fastapi.security import APIKeyHeader , APIKeyQuery     # APIKeyquery   هیح فرقی با هدر نداره کوئری همین
 
-header_schema = APIKeyHeader(name="x-key")
+# header_schema = APIKeyHeader(name="x-key")    # مهر شرکت روی اون بلیط ها هست 
+
+
 
 
 @app.get("/public")
@@ -69,9 +72,9 @@ def public_route():
 
 
 
-@app.get("/private")
-def private_route(api_key = Depends(header_schema)):
-    return {"Message" : "this is a private route"}
+# @app.get("/private")
+# def private_route(api_key = Depends(header_schema)):
+#     return {"Message" : "this is a private route"}
 
 
 
@@ -79,3 +82,14 @@ def private_route(api_key = Depends(header_schema)):
 # def private_route(user:UserModel = Depends(get_current_username)):
 #     print(user)
 #     return {"Message" : "this is a private route"}
+
+
+
+
+
+
+
+@app.get("/private")
+def private_route(user = Depends(get_current_user)):
+    return user
+    return {"Message" : "this is a private route"}
