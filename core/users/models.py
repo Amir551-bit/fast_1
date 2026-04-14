@@ -12,7 +12,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 class UserModel(Base):
-    __tablename__="users"
+    __tablename__= "users"
 
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -25,8 +25,17 @@ class UserModel(Base):
     update_date = Column(DateTime, server_default=func.now(), server_onupdate=func.now())
     
 
-    task = relationship("TaskModel", back_populates="user")
+    task = relationship("TaskModel", back_populates="user")     #   در کد پایتون بهت خود آبجکت user رو میده
     
+    
+
+#     دانشجو و درس:
+
+# ForeignKey = شماره دانشجو
+# relationship = خود دانشجو
+
+##    و اینم بدون که فارن کی و ریلیشن شیب باید با هم باشن همین و تمام
+##     این ریلیشن شیب خوب میاد و خود اون ابجکت یعنی خود یوزر رو میده ولی فارن کی فقط میاد اون عدده که برای یوزر ای دی باشه رو نشونمون میده همین و تمام 
 
 
     def hash_password(self, plain_password : str)->str:

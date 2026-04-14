@@ -2,8 +2,10 @@ from fastapi import APIRouter, Path, Depends, HTTPException, Query
 from fastapi.responses import JSONResponse
 from core.tasks.schemas import *
 from core.tasks.models import TaskModel
+from core.users.models import UserModel
 from sqlalchemy.orm import Session
 from core.core.database import get_db
+from auth.jwt_auth import get_current_user
 from typing import List
 
 router = APIRouter(tags=["tasks"], prefix="/todo")
@@ -14,8 +16,11 @@ async def retrieve_tasks_list(
     completed : bool = Query(None, description="filter tasks based on being completed or not"),
     limit : int = Query(10, gt=0, le=50, description="limiting the number of items to retrieve"),
     offset : int = Query(0, ge=0, description="use for paginating based on passsed items"),        # این که گذاشته نان خوب برای اینکه یعنی کاربر اصلا میتونه چیزی وارد نکنه 
-    db : Session = Depends(get_db)):
-    query = db.query(TaskModel)                                                                   # بزنه فالس فقط اونایی که فالس هست رو نشون میده و بزنه ترو اونایی که ترو هست فقط نشون میده 
+    db : Session = Depends(get_db), 
+    user : UserModel = Depends(get_current_user)):
+
+
+    query = db.query(TaskModel).filter_by(user_id=user.id).first()                                                                # بزنه فالس فقط اونایی که فالس هست رو نشون میده و بزنه ترو اونایی که ترو هست فقط نشون میده 
     if completed is not None:
 
         query = query.filter_by(is_completed=completed)
@@ -28,8 +33,9 @@ async def retrieve_tasks_list(
 
 @router.get("/tasks/{task_id}", response_model=TaskResponseSchema)
 async def retrieve_tasks_details(task_id:int = Path(..., gt=0),
-                                 db : Session = Depends(get_db)):
-    task_obj = db.query(TaskModel).filter_by(id=task_id).first()
+                                 db : Session = Depends(get_db),
+                                 user : UserModel = Depends(get_current_user)):
+    task_obj = db.query(TaskModel).filter_by(user_id=user.id, id=task_id).first()
     if not task_obj:
         raise HTTPException(status_code=404, detail="Task not found") 
     return task_obj
@@ -39,9 +45,12 @@ async def retrieve_tasks_details(task_id:int = Path(..., gt=0),
 
 
 @router.post("/tasks", response_model=TaskResponseSchema)
-async def create_task(request:TaskCreateSchema,  db : Session = Depends(get_db)):
-                                         # ببین حالا این ریکواست خوب همون یک شی از تسک کریت شما است
-    task_obj = TaskModel(**request.model_dump())        # از دیکشنری باید در بیاد چون برای دیتابیس دیکشنری لازم نیس اصن
+async def create_task(request:TaskCreateSchema,  db : Session = Depends(get_db),
+                      user : UserModel = Depends(get_current_user)):
+    
+    data = request.model_dump()
+    data.update({"user_id": user.id})                                     # ببین حالا این ریکواست خوب همون یک شی از تسک کریت شما است
+    task_obj = TaskModel(**data)        # از دیکشنری باید در بیاد چون برای دیتابیس دیکشنری لازم نیس اصن
     db.add(task_obj)
     db.commit()           # چون میخواد یه شی از تسک مدل بشه باید از دیکشنری در بیاد دیکه همین 
     db.refresh(task_obj)
@@ -64,15 +73,16 @@ async def create_task(request:TaskCreateSchema,  db : Session = Depends(get_db))
 @router.put("/tasks/{task_id}", response_model=TaskResponseSchema)
 async def update_task(request:TaskUpdateSchema,
                       task_id : int = Path(..., gt=0),
-                      db : Session = Depends(get_db)):
-    task_obj = db.query(TaskModel).filter_by(id=task_id).first()
+                      db : Session = Depends(get_db),
+                      user : UserModel = Depends(get_current_user)):
+    task_obj = db.query(TaskModel).filter_by(user_id=user.id,id=task_id).first()
     if not task_obj:
         raise HTTPException(status_code=404, detail="Task not found") 
     
 
 
-    for field, value in request.model_dump(exclude_unset=True).items():
-        setattr(task_obj, field, value)
+    for field, value in request.model_dump(exclude_unset=True).items(): 
+        setattr(task_obj, field, value)                                    # task_obj.field =  value       قشنگ معادل همین هست 
 
     db.commit()
     db.refresh(task_obj)
@@ -87,8 +97,9 @@ async def update_task(request:TaskUpdateSchema,
 
 @router.delete("/tasks/{task_id}", response_model=list[TaskResponseSchema])
 async def delete_user(task_id : int = Path(..., gt=0),
-                      db : Session = Depends(get_db)):
-    task_obj = db.query(TaskModel).filter_by(id=task_id).first()
+                      db : Session = Depends(get_db),
+                      user : UserModel = Depends(get_current_user)):
+    task_obj = db.query(TaskModel).filter_by(user_id=user.id,id=task_id).first()
     if not task_obj:
         raise HTTPException(status_code=404, detail="Task not found")
     db.delete(task_obj)

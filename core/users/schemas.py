@@ -23,3 +23,8 @@ class UserRegisterSchema(BaseModel):
         if not (password_confirm == validation.data.get("password")):  # = یه شیء که بهت اجازه می‌ده به بقیه فیلدهای فرم دسترسی داشته باشی.
             raise ValueError("passwords doesnt match")
         return password_confirm
+    
+
+
+class UserRefreshSchema(BaseModel):
+    refresh_token : str = Field(..., description='refresh token of the user')

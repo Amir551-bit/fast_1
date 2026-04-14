@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, Response, Request
 from contextlib import asynccontextmanager
 from core.tasks.routes import router as tasks_routes 
 from core.core.database import Base, engine
@@ -20,7 +20,6 @@ tags_metadata = [
         }
     }
 ]
-
 
 
 
@@ -73,23 +72,62 @@ def public_route():
 
 
 # @app.get("/private")
-# def private_route(api_key = Depends(header_schema)):
+# def private_route(api_key = Depends(header_schema)):          ول
 #     return {"Message" : "this is a private route"}
 
 
 
 # @app.get("/private")
-# def private_route(user:UserModel = Depends(get_current_username)):
+# def private_route(user:UserModel = Depends(get_current_username)):       ول
 #     print(user)
 #     return {"Message" : "this is a private route"}
 
 
 
+# from auth.token_auth import get_current_user
+
+                                                                    #1
+# @app.get("/private")
+# def private_route(user = Depends(get_current_user)):
+#     print(user)
+#     return {"Message" : "this is a private route"}
 
 
+
+from auth.jwt_auth import get_current_user
 
 
 @app.get("/private")
 def private_route(user = Depends(get_current_user)):
-    return user
+    print(user.id)
     return {"Message" : "this is a private route"}
+
+
+
+
+
+# @app.get("/private")
+# def private_route(user = Depends(get_current_user)):
+#     return user
+
+
+
+
+
+@app.post("/set-cookie")
+def set_cookie(response:Response):
+    response.set_cookie(key="test", value="somethings") 
+    return {"message" : "Cookie has been set succesfully"}                         #  با کوکی خوب میشه  قشنک لاگین رو هم اوکی کرد همین بعدن با هوش مصنوعی بزن یاد بده 
+
+
+
+@app.get("/get-cookie")
+def get_cookie(request:Request):
+    print(request.cookies.get("test")) 
+    return {"message" : "Cookie has been set succesfully"}
+
+
+
+
+#  modheader    برای اینکه خوب اون توکن هر بار هی وارد  نکنی اون بالا اونو میزاری
+# Authorization: Bearer YOUR_TOKEN
