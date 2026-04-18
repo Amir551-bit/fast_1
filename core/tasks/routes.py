@@ -17,10 +17,10 @@ async def retrieve_tasks_list(
     limit : int = Query(10, gt=0, le=50, description="limiting the number of items to retrieve"),
     offset : int = Query(0, ge=0, description="use for paginating based on passsed items"),        # این که گذاشته نان خوب برای اینکه یعنی کاربر اصلا میتونه چیزی وارد نکنه 
     db : Session = Depends(get_db), 
-    user : UserModel = Depends(get_current_user)):
+    user : UserModel = Depends(get_current_user)):  
 
 
-    query = db.query(TaskModel).filter_by(user_id=user.id).first()                                                                # بزنه فالس فقط اونایی که فالس هست رو نشون میده و بزنه ترو اونایی که ترو هست فقط نشون میده 
+    query = db.query(TaskModel).filter_by(user_id=user.id)                                                             # بزنه فالس فقط اونایی که فالس هست رو نشون میده و بزنه ترو اونایی که ترو هست فقط نشون میده 
     if completed is not None:
 
         query = query.filter_by(is_completed=completed)
@@ -35,7 +35,7 @@ async def retrieve_tasks_list(
 async def retrieve_tasks_details(task_id:int = Path(..., gt=0),
                                  db : Session = Depends(get_db),
                                  user : UserModel = Depends(get_current_user)):
-    task_obj = db.query(TaskModel).filter_by(user_id=user.id, id=task_id).first()
+    task_obj = db.query(TaskModel).filter_by(user_id=user.id, id=task_id).first()                     #   اینجا یعنی دو تا شرط برقرار باشه درسته یعنی مثل and هست 
     if not task_obj:
         raise HTTPException(status_code=404, detail="Task not found") 
     return task_obj
@@ -51,12 +51,13 @@ async def create_task(request:TaskCreateSchema,  db : Session = Depends(get_db),
     data = request.model_dump()
     data.update({"user_id": user.id})                                     # ببین حالا این ریکواست خوب همون یک شی از تسک کریت شما است
     task_obj = TaskModel(**data)        # از دیکشنری باید در بیاد چون برای دیتابیس دیکشنری لازم نیس اصن
-    db.add(task_obj)
+    db.add(task_obj)  
+    
     db.commit()           # چون میخواد یه شی از تسک مدل بشه باید از دیکشنری در بیاد دیکه همین 
     db.refresh(task_obj)
 
     return task_obj
-
+  
 
 
     # task = TaskModel(

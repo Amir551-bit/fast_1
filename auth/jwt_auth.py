@@ -69,7 +69,7 @@ def generate_refresh_token(user_id : int, expire_in : int = 3600* 24)-> str:
         "type" : "refresh",
         "user_id" : user_id,
         "iat" : now,
-        "exp" : now + timedelta(seconds=expire_in)
+        "exp" : now + timedelta(seconds=expire_in)          #  تایم دلتا خوب میاد اون مدت زمانی که ما بهش دادیم رو در یکجا دخیره میکنه و میره 
     }
     return jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm ="HS256")
 

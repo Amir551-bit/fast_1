@@ -20,13 +20,12 @@ def generate_token(length=32):
 
 
 @router.post("/login")
-async def user_login(request:UserLoginSchema, db : Session = Depends(get_db)):
+async def user_login(request:UserLoginSchema, db : Session = Depends(get_db)):       # وقتی می‌گی Session یعنی: "من یک کانال ارتباطی باز با دیتابیس می‌خوام که بتونم توش چند تا کار انجام بدم و در آخر ببندمش."
     user_obj = db.query(UserModel).filter_by(username=request.username).first()
     if not user_obj:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="user doesnt exists")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid user or password")
     if not user_obj.hash_password(request.password): #رمز عبور فرستاده شده الان رو با هش ذخیره شده در دیتابیس مقایسه میکنه همین 
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="password is invalid")
-    
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid user or password")
 
     access_token = generate_acces_token(user_obj.id)
     refresh_token = generate_refresh_token(user_obj.id)
@@ -55,7 +54,7 @@ async def user_register(request:UserRegisterSchema, db : Session = Depends(get_d
     user_obj.set_password(request.password)
     db.add(user_obj)
     db.commit()
-    return JSONResponse(content={"detail":"user registed succesfully"})
+    return JSONResponse(content={"detail":"user registed succesfully"}, status_code=status.HTTP_201_CREATED)
 
 
 
